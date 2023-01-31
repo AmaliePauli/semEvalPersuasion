@@ -46,6 +46,9 @@ class ModelArguments:
     q: float = field(
         default=0.4
     )
+    lr: float = field(
+        default=4e-5
+    )
     train_seed: int =field(
         default=42
     )
@@ -124,9 +127,12 @@ def main():
         args={
         "reprocess_input_data": True,
         "overwrite_output_dir": True,
+        "evaluate_during:training": True,
+        "use_early_stopping": True,
         "num_train_epochs": 10,
         "max_seq_length": 512,
         "train_batch_size": 8,
+        "learning_rate": model_args.lr,
         "output_dir": model_args.output,
         "use_cuda": True,
         "seed": model_args.train_seed, #np.random.randint(1000, size=1)[0],

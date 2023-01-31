@@ -90,6 +90,7 @@ def main():
     else:
         task3_labels=TASK3_LABELS
     print('lenght of labels ' + str(len(task3_labels)) )
+    
     if model_args.do_eval:
             df3_train_split = df3.sample(frac=0.85, random_state=SEED)
             df3_val_split = df3.drop(df3_train_split.index)
