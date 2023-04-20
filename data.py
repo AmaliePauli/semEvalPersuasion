@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from tqdm import tqdm
 import numpy as np
+from transformers import pipeline
 #from dataclasses import dataclass, field
 #from transformers import HfArgumentParser
 #from sklearn.metrics import f1_score, recall_score, precision_score
@@ -136,8 +137,35 @@ def create_task2_multi(langs):
             df=pd.concat([df,df2[['text','labels']]])
     return df 
 
+def add_appeals(df3):
+    
+    classifier_cred = pipeline("text-classification",model='appeal_model/final_ethos_s1_std', top_k=1, truncation=True)
+    pred_cred = pd.Series(classifier_cred(list(df3['text'])))
+    pred_cred = pred_cred.apply(lambda x: x[0].get('label'))
+    df3['pred_cred']=pd.Series(list(pred_cred), index=df3.index)
+    print(df3['pred_cred'].sum())
+
+    classifier_emo = pipeline("text-classification",model='appeal_model/final_pathos_s1_std', top_k=1, truncation=True)
+    pred_emo = pd.Series(classifier_emo(list(df3['text'])))
+    pred_emo = pred_emo.apply(lambda x: x[0].get('label'))
+    df3['pred_emo']=pd.Series(list(pred_emo), index=df3.index)
+    print(df3['pred_emo'].sum())
+
+    classifier_log = pipeline("text-classification",model='appeal_model/final_logos_s1_std', top_k=1, truncation=True)
+    pred_log = pd.Series(classifier_log(list(df3['text'])))
+    pred_log = pred_log.apply(lambda x: x[0].get('label'))
+    df3['pred_log']=pd.Series(list(pred_log), index=df3.index)
+    print(df3['pred_log'].sum())
 
 
+    df3['pred_emoN'] = df3['pred_emo'].apply(lambda x: 'emotional appeal ' if x==1 else '')
+    df3['pred_credN'] = df3['pred_cred'].apply(lambda x: 'credibility attack ' if x==1 else '')
+    df3['pred_logN'] = df3['pred_log'].apply(lambda x: 'logical fallacy ' if x==1 else '')
+
+    df3['text'] = df3.apply(lambda x: x.pred_emoN + x.pred_credN +x.pred_logN + ':' + x.text, axis=1)
+    
+        
+    return df3
 
 def _create_samples_multilabel(df: pd.DataFrame, labels_sorted, sample_size: int, seed: int) -> pd.DataFrame:
     """Samples a DataFrame to create an equal number of samples per class (when possible)."""
