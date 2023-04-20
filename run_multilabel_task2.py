@@ -195,7 +195,8 @@ def main():
         if not os.path.exists('task2/'+str(data_args.pred_lang)):
                os.makedirs('task2/'+str(data_args.pred_lang))
         
-        output_pred_file = 'task2/{}/NEWpred_{}_{}.csv'.format(data_args.pred_lang,data_args.pred_lang,model_args.model_name_or_path.partition('/')[2])
+        output_pred_file = 'task2/{}/DEV_noSamp_xlm.csv'.format(data_args.pred_lang)
+        
         print(output_pred_file)
         # pred_ru_models/xlm_512_mul_e10.csv
 

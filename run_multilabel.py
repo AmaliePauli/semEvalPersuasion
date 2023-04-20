@@ -10,7 +10,7 @@ from simpletransformers.config.model_args import MultiLabelClassificationArgs
 from sklearn.metrics import f1_score, recall_score, precision_score
 # Train and Evaluation data needs to be in a Pandas Dataframe containing at least two columns, a 'text' and a 'labels' column. The `labels` column should contain multi-hot encoded lists.
 
-from data import make_data, creat_task3_multi, make_dataframe_task3, TASK3_LABELS, TASK3_LABELS_EN
+from data import make_data, creat_task3_multi, make_dataframe_task3, add_appeals, TASK3_LABELS, TASK3_LABELS_EN
 
 SEED= 42
 @dataclass
@@ -53,6 +53,7 @@ class ModelArguments:
         default=42
     )
 
+
     
 
 @dataclass
@@ -65,7 +66,10 @@ class DataTrainingArguments:
     )
     lang_ekstra: str=field(
         default=None
-    )    
+    )
+    appeal: bool = field(
+        default=False
+    )
     
         
     
@@ -84,6 +88,14 @@ def main():
     print(data_args.lang)
     print(lang)
     df3 = creat_task3_multi(lang)
+    
+    ### Add the misuse of appeal
+    if data_args.appeal:
+        print('appeals')
+        df3 = add_appeals(df3)
+        
+        
+    
     #num_labels = len(task3_labels_)
     if data_args.lang=='en':
         task3_labels=TASK3_LABELS_EN
@@ -106,7 +118,7 @@ def main():
         elif data_args.lang_ekstra=='en2':
             ekstra = ['en', 'en']
         else:
-            ekstra = ['en', data_args.lang_ekstra]
+            ekstra = [data_args.lang_ekstra]
         
             
         
@@ -188,6 +200,11 @@ def main():
         path_folder = os.getcwd()
         dev_folder = path_folder + '/data/{}/dev-articles-subtask-3/'.format(data_args.pred_lang)
         df_dev = make_dataframe_task3(dev_folder)
+        
+           ### Add the misuse of appeal
+        if data_args.appeal:
+            df_dev = add_appeals(df_dev)
+            df_dev.to_csv('dev_appeals.csv')
         df_dev=df_dev.reset_index()
 
         # predict
@@ -200,7 +217,7 @@ def main():
         df_dev['labels_pred']=series_labels.apply(lambda x: ','.join(x))
         if not os.path.exists(str(data_args.pred_lang)):
                os.makedirs(str(data_args.pred_lang))
-        output_pred_file = '{}/Newpred_{}.csv'.format(data_args.pred_lang,data_args.pred_lang) #, model_args.model_name_or_path.replace('/',''))
+        output_pred_file = '{}/DEV_Appeal_{}_seed_{}.csv'.format(data_args.pred_lang,model_args.model_name_or_path, model_args.train_seed) #, model_args.model_name_or_path.replace('/',''))
         print(output_pred_file)
         # pred_ru_models/xlm_512_mul_e10.csv
 
